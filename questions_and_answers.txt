@@ -1,5 +1,2 @@
-test | test
-d
-line3
-dasdas
-dsad|sdasd
+pierwsze pytanie|pierwsza odpowiedz
+drugie pytanie|druga odpowiedz
