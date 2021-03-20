@@ -16,7 +16,7 @@
    <children>
       <AnchorPane prefHeight="500.0" prefWidth="600.0">
          <children>
-            <TextFlow id="SpaceForText" fx:id="SpaceForText" layoutX="176.0" layoutY="109.0" prefHeight="200.0" prefWidth="200.0" />
+            <TextFlow id="SpaceForText" fx:id="SpaceForText" layoutX="11.0" layoutY="10.0" prefHeight="478.0" prefWidth="580.0" />
          </children></AnchorPane>
    </children>
 </GridPane>

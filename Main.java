@@ -17,36 +17,48 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.stream.Collectors;
 
-import static sample.Controller.controller;
-
 
 public class Main extends Application {
     static Map<String, String> mapFromFile;
-
     private BlockingQueue<String> odpowiedzi = new ArrayBlockingQueue<String>(1);
+
+    FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("sample.fxml"));
+    Parent root;
+    {
+        try {
+            root = (Parent) fxmlLoader.load();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+        //
+    Controller controller = fxmlLoader.getController(); // <Controller>
     @Override
     public void start(Stage primaryStage) throws Exception{
-        Parent root = FXMLLoader.load(getClass().getResource("sample.fxml"));
+
         primaryStage.setTitle("QUIZ-SERWER");
         primaryStage.setScene(new Scene(root, 600, 500));
-
         primaryStage.show();
 
         new Thread(()->{
             try {
-                nasluchiwanieOdpowiedzi();
-            } catch (IOException | InterruptedException e) {
-                e.printStackTrace();
-            }
-        }).start();
-
-        new Thread(()->{
-            try {
                 obslugaOdpowiedzi();
+
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
         }).start();
+
+         Thread thread =new Thread(()->{
+
+            try {
+                nasluchiwanieOdpowiedzi();
+            } catch (InterruptedException | IOException e) {
+                e.printStackTrace();
+            }
+        });
+         thread.setDaemon(true);
+        thread.start();
 
     }
 
@@ -65,7 +77,7 @@ public class Main extends Application {
     }
     public void nasluchiwanieOdpowiedzi() throws IOException, InterruptedException {
         ServerSocket ss = new ServerSocket(8888); //utworzenie gniazda i portu
-        for(;;) {
+        for(;;) { //daemon zakonczy te petle
 
             Socket s = ss.accept(); // oczekiwanie na polaczenie
 
@@ -76,18 +88,23 @@ public class Main extends Application {
 
             odpowiedzi.put(str);
 
-           // System.out.println(str);
         }}
-
+    String result = "";
     public void obslugaOdpowiedzi() throws InterruptedException {
+
         for (String key : mapFromFile.keySet())
         {
-            System.out.println(key);
+            result =result + "\n" + key;
 
-
+            controller.setText(result);
             while(!odpowiedzi.take().equals(mapFromFile.get(key))){
-                System.out.println("zle");
-            }System.out.println("dziaa");
+                result =result + "\nZla odpowiedz";
+                controller.setText(result);
+
+            }
+            result =result + "\nDobra odpowiedz";
+            controller.setText(result);
+            odpowiedzi.clear();
 
             }
 
