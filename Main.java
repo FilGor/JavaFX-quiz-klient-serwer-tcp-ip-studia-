@@ -61,6 +61,10 @@ public class Main extends Application {
         thread.start();
 
     }
+    @Override
+    public void stop() {
+        System.exit(0);
+    }
 
 
     public static void main(String[] args) throws IOException {
@@ -75,18 +79,19 @@ public class Main extends Application {
 
         launch(args);
     }
+    String nickname;
     public void nasluchiwanieOdpowiedzi() throws IOException, InterruptedException {
         ServerSocket ss = new ServerSocket(8888); //utworzenie gniazda i portu
-        for(;;) { //daemon zakonczy te petle
+       for(;;) {
 
             Socket s = ss.accept(); // oczekiwanie na polaczenie
 
             InputStreamReader in = new InputStreamReader(s.getInputStream());
             BufferedReader bf = new BufferedReader(in);
 
-            String str = bf.readLine();
-
-            odpowiedzi.put(str);
+            String odpowiedz = bf.readLine();
+            nickname= bf.readLine();
+            odpowiedzi.put(odpowiedz);
 
         }}
     String result = "";
@@ -102,7 +107,7 @@ public class Main extends Application {
                 controller.setText(result);
 
             }
-            result =result + "\nDobra odpowiedz";
+            result =result + "\nDobra odpowiedz " + nickname;
             controller.setText(result);
             odpowiedzi.clear();
 
