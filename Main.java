@@ -110,8 +110,8 @@ public class Main extends Application {
             result =result + "\nDobra odpowiedz " + nickname;
             controller.setText(result);
             odpowiedzi.clear();
-
             }
-
+        result =result + "\n\nOdpowiedziano na wszystkie pytania!";
+        controller.setText(result);
         }
 }

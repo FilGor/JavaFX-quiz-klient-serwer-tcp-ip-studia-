@@ -14,6 +14,7 @@ public class Controller {
 
     public void initialize() {
         txt.setTextAlignment(TextAlignment.LEFT);
+        txt.setFont(Font.font(20));
         SpaceForText.getChildren().add(txt);
     }
     public void setText(String text){
