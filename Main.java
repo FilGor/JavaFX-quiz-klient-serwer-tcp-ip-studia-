@@ -20,8 +20,8 @@ import java.util.stream.Collectors;
 
 public class Main extends Application {
     static Map<String, String> mapFromFile;
-    private BlockingQueue<String> odpowiedzi = new ArrayBlockingQueue<String>(1);
-
+    static BlockingQueue<String> odpowiedzi = new ArrayBlockingQueue<String>(2);
+    static String nickname;
     FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("sample.fxml"));
     Parent root;
     {
@@ -32,7 +32,6 @@ public class Main extends Application {
         }
     }
         //
-    Controller controller = fxmlLoader.getController(); // <Controller>
     @Override
     public void start(Stage primaryStage) throws Exception{
 
@@ -40,78 +39,44 @@ public class Main extends Application {
         primaryStage.setScene(new Scene(root, 600, 500));
         primaryStage.show();
 
-        new Thread(()->{
-            try {
-                obslugaOdpowiedzi();
-
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }).start();
-
          Thread thread =new Thread(()->{
 
-            try {
-                nasluchiwanieOdpowiedzi();
-            } catch (InterruptedException | IOException e) {
-                e.printStackTrace();
-            }
-        });
-         thread.setDaemon(true);
+             nasluchiwanieOdpowiedzi(); //wyjatki przechwytywane w metodzie
+         });
+         thread.setDaemon(true); //aby watek zakonczyl sie razem z mainem (poniewaz jest w nim petla nieskonczona)
         thread.start();
 
     }
     @Override
     public void stop() {
         System.exit(0);
-    }
-
+    } //aby zamkniecie okna zamykalo aplikacje
 
     public static void main(String[] args) throws IOException {
         String filepath = "C:\\Users\\xfili\\Desktop\\spring\\anothertest\\" +
                 "QuizKlientSerwerTCP-IP\\src\\sample\\questions_and_answers.txt";
 
-
-        mapFromFile = Files.lines(Paths.get(filepath))
+        mapFromFile = Files.lines(Paths.get(filepath)) //pobranie z pytan i odpowiedzi
                 .filter(s -> s.matches(".*|.*")) //bierzemy pod uwage linie w ktorych mamy jakies znaki rozdzielone |
-                .collect(Collectors.toMap(k -> k.split("\\|")[0], v -> v.split("\\|")[1]));
-
-
+                .collect(Collectors.toMap(k -> k.split("\\|")[0], v -> v.split("\\|")[1]));//rozdzielenie
         launch(args);
     }
-    String nickname;
-    public void nasluchiwanieOdpowiedzi() throws IOException, InterruptedException {
-        ServerSocket ss = new ServerSocket(8888); //utworzenie gniazda i portu
+    public void nasluchiwanieOdpowiedzi()  {
+
        for(;;) {
 
-            Socket s = ss.accept(); // oczekiwanie na polaczenie
-
-            InputStreamReader in = new InputStreamReader(s.getInputStream());
-            BufferedReader bf = new BufferedReader(in);
-
-            String odpowiedz = bf.readLine();
-            nickname= bf.readLine();
-            odpowiedzi.put(odpowiedz);
-
+            try(ServerSocket ss = new ServerSocket(8888); //utworzenie gniazda i portu
+                Socket s = ss.accept(); // oczekiwanie na polaczenie
+                InputStreamReader in = new InputStreamReader(s.getInputStream());
+                BufferedReader bf = new BufferedReader(in);
+            ) {
+                String odpowiedz = bf.readLine();
+                nickname = bf.readLine();
+                odpowiedzi.put(odpowiedz);
+            }catch(IOException| InterruptedException e ){
+                e.printStackTrace();
+           }
         }}
-    String result = "";
-    public void obslugaOdpowiedzi() throws InterruptedException {
 
-        for (String key : mapFromFile.keySet())
-        {
-            result =result + "\n" + key;
 
-            controller.setText(result);
-            while(!odpowiedzi.take().equals(mapFromFile.get(key))){
-                result =result + "\nZla odpowiedz";
-                controller.setText(result);
-
-            }
-            result =result + "\nDobra odpowiedz " + nickname;
-            controller.setText(result);
-            odpowiedzi.clear();
-            }
-        result =result + "\n\nOdpowiedziano na wszystkie pytania!";
-        controller.setText(result);
-        }
 }
